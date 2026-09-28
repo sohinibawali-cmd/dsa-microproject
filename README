@@ -1,1 +1,238 @@
-Blood Donor Finder System is a console-based C application . It simulates a small blood-bank management system — registering donors, tracking their eligibility to donate, handling incoming blood requests by both arrival order and urgency, and routing between hospitals to find the shortest path between them. Rather than using one structure for everything, the project pairs each feature with the data structure best suited to it: linked lists and a hash table for donor records, a stack for undo, a queue and a heap for request handling, a graph for hospital routing via Dijkstra's algorithm, and quicksort for generating reports .
+Blood Donor Finder System is a console-based C application .
+It simulates a small blood-bank management system — registering donors, tracking their eligibility to donate, handling incoming blood requests by both arrival order and urgency, and routing between hospitals to find the shortest path between them. Rather than using one structure for everything, the project pairs each feature with the data structure best suited to it:
+1.linked lists and a hash table for donor records,
+2.a stack for undo, 
+3.a queue and a heap for request handling,
+4. a graph for hospital routing via Dijkstra's algorithm, and 
+5.quicksort for generating reports .
+
+
+⁕ LINKED LIST(SINGLY LINKED LIST)-[donor records]:-
+
+→ A linked list is a linear data structure where elements are not stored in contiguous (neighboring) memory locations. Instead, it consists of a sequence of components called nodes, which are chained together using pointers or references.
+→ A singly linked list is the simplest type of linked list. It is called "singly" because each node contains only one pointer, which points forward to the next node in the sequence.
+
+How it works here: Every donor is a Donor node. donorHead points to the front of the chain, and each new donor is attached at the front.
+
+What it changes / why this one: An array would force a fixed donor limit. A linked list grows one donor at a time, and adding at the head is instant (O(1)). It also lets the program walk through every donor, which reports and blood-group filters need.
+
+d->next = donorHead;     // new donor points to the old first donor
+donorHead = d;           // new donor becomes the first
+Donor *curr = donorHead; // walking the list
+while (curr) { /* check curr */ curr = curr->next; }
+
+
+⁕ HASH TABLE-[fast donor lookup]:-
+
+→ A hash table (or hash map) is a data structure that stores information in key-value pairs. It functions like a real-world dictionary: you look up a specific "key" (the word) to instantly find its "value" (the definition).
+
+How it works here: hash(id) gives a slot number, and that slot stores a pointer to the donor. Edit, undo and search-by-ID all use it.
+
+What it changes / why this one: Without it, finding donor #101 means walking the whole list, which is O(n). With it, it's one array lookup, O(1) on average. The list can't do this quickly, and the table can't list everyone, so the project uses both.
+
+int hash(int id) { return id % HASH_SIZE; }   // HASH_SIZE = 101
+hashTable[hash(id)] = d;                      // store on register
+Donor *d = hashTable[hash(id)];               // jump straight to donor
+if (d && d->id == id) { /* found */ }
+
+
+⁕ STACK-[undo]:-
+
+→ A stack is a linear data structure that follows a specific order for handling elements: LIFO (Last In, First Out).
+
+How it works here: Before an edit overwrites a donor, the old name and date are pushed onto undoStack. Undo pops the top and restores it.
+
+What it changes / why this one: It gives every edit a way back. LIFO is what undo needs, because the newest change must be reversed first.
+
+undoTop++;                                          // push (before editing)
+undoStack[undoTop].id = id;
+strcpy(undoStack[undoTop].name, d->name);
+UndoRecord u = undoStack[undoTop--];                // pop (on undo)
+
+
+⁕ QUEUE-[requests in arrival order]:-
+
+→ A queue is a linear data structure that follows a strict FIFO (First In, First Out) ordering principle.
+
+How it works here: New blood requests join at queueRear. Option 8 serves whoever is at queueFront.
+
+What it changes / why this one: It gives fairness, since requests are served in the order they arrived. Both ends are tracked, so adding and removing are O(1).
+
+if (!queueRear) { queueFront = queueRear = r; }   // empty queue
+else { queueRear->next = r; queueRear = r; }      // join at the back
+queueFront = queueFront->next;                    // serve from the front
+
+
+⁕ MAX-HEAP-[most urgent request]:-
+
+→ A max heap is a specialized, tree-based data structure that satisfies the heap property: the value of each parent node must be greater than or equal to the values of its children.
+
+How it works here: Each request goes into the heap with its priority (1-10). Option 9 always removes the root, which is the highest priority.
+
+What it changes / why this one: The queue ignores urgency, so a critical patient could wait behind routine ones. The heap serves the most urgent first, in O(log n). That's why case 7 puts each request into both structures, so you can compare "fair" with "urgent."
+
+int p = (i - 1) / 2;                                  // parent of index i
+if (heap[p]->priority >= heap[i]->priority) break;    // heap rule holds
+Request *max = heap[0];                               // most urgent
+heap[0] = heap[--heapSize];
+heapifyDown(0);
+
+
+⁕ GRAPH+DIJKSTRA-[nearest hospital]:-
+
+→ A graph is a non-linear data structure used to represent relationships between pairs of objects. It consists of a network of points connected by lines.
+→ Dijkstra's Algorithm is a famous greedy algorithm used to find the shortest path from a single source node to all other nodes in a weighted graph.
+
+How it works here: Hospitals are nodes and routes are weighted edges. Each hospital has a linked list of its connections (adjacency list). Dijkstra starts from the source hospital and repeatedly picks the closest unvisited one.
+
+What it changes / why this one: It turns "which hospital is nearest?" into a computed answer, including multi-hop routes that no direct route would show.
+
+e1->to = v; e1->cost = cost; e1->next = graph[u]; graph[u] = e1;
+e2->to = u; e2->cost = cost; e2->next = graph[v]; graph[v] = e2;  // both ways
+if (!visited[e->to] && dist[u] + e->cost < dist[e->to])
+    dist[e->to] = dist[u] + e->cost;                 // found a shorter route
+
+
+⁕ QUICK SORT-[reports]:-
+
+→ Quick Sort is a highly efficient, comparison-based sorting algorithm that uses a divide-and-conquer strategy. It operates by breaking a large array down into smaller sub-arrays and sorting them recursively.
+
+How it works here: One sort function serves two reports: eligible donors by longest wait (option 11) and an alphabetical list (option 12). The byName flag switches the comparison.
+
+What it changes / why this one: It turns an unordered list into a useful report, in O(n log n) on average. It sorts pointers, so donor data is never copied.
+
+if (byName)
+    cmp = strcmp(arr[j]->name, pivot->name);
+else
+    cmp = daysBetween(arr[j]->lastDonation, todayDate) -
+          daysBetween(pivot->lastDonation, todayDate);
+if (cmp > 0) { i++; swapDonors(&arr[i], &arr[j]); }
+
+
+
+===SAMPLE OUTPUT===
+
+===== Blood Donor Finder (Minimal Version) =====
+ 1. Register Donor
+ 2. Edit Donor
+ 3. Undo Last Edit
+ 4. Display Donors by Blood Group
+ 5. Add Hospital
+ 6. Add Route Between Hospitals
+ 7. New Emergency Request (FIFO + Priority)
+ 8. Process Next Request (FIFO)
+ 9. Process Most Urgent Request (Heap)
+10. Search Donor by ID (Hash)
+11. Show Eligible Donors (Quick Sort)
+12. Alphabetical Report (Quick Sort)
+13. Find Nearest Hospital (Dijkstra)
+ 0. Exit
+
+Choice: 1
+ID: 101
+Name: RAVI
+Blood Group: A+
+Last Donation (YYYY-MM-DD): 2020-04-23
+Donor registered successfully.
+
+Choice: 1
+ID: 102
+Name: MOHAN
+Blood Group: O+
+Last Donation (YYYY-MM-DD): 2023-05-12
+Donor registered successfully.
+
+Choice: 1
+ID: 103
+Name: Pallavi
+Blood Group: A+
+Last Donation (YYYY-MM-DD): 2025-12-22
+Donor registered successfully.
+
+Choice: 4
+Blood Group: A+
+ID: 103 | Pallavi | Last: 2025-12-22
+ID: 101 | RAVI | Last: 2020-04-23
+
+Choice: 12
+
+Alphabetical Donor Report:
+RAVI | ID: 101 | A+
+Pallavi | ID: 103 | A+
+MOHAN | ID: 102 | O+
+
+Choice: 5
+Hospital Name: apollo
+Hospital added (index 0).
+
+Choice: 5
+Hospital Name: city hospital
+Hospital added (index 1).
+
+Choice: 5
+Hospital Name: fhc
+Hospital added (index 2).
+
+Choice: 6
+Current hospitals:
+  0 = apollo
+  1 = city hospital
+  2 = fhc
+From: 0
+To: 1
+Cost: 6
+Route added.
+
+Choice: 6
+Current hospitals:
+  0 = apollo
+  1 = city hospital
+  2 = fhc
+From: 1
+To: 2
+Cost: 9
+Route added.
+
+Choice: 6
+Current hospitals:
+  0 = apollo
+  1 = city hospital
+  2 = fhc
+From: 0
+To: 2
+Cost: 12
+Route added.
+
+Choice: 13
+Current hospitals:
+  0 = apollo
+
+
+  1 = city hospital
+  2 = fhc
+Source index: 0
+
+Nearest hospitals from apollo:
+  city hospital -> cost 6
+  fhc -> cost 12
+
+Choice: 8
+No requests in queue.
+
+Choice: 7
+Request ID: 101
+Patient: ravi
+Blood Group: A+
+Units: 2
+Priority (1-10): 4
+Request added to FIFO queue.
+
+Choice: 9
+Processing URGENT ΓåÆ Patient: ravi | Priority: 4 | BG: A+
+
+Choice: 0 
+Goodbye!
+
+
+
+
