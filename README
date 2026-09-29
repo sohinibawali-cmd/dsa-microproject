@@ -112,20 +112,20 @@ if (cmp > 0) { i++; swapDonors(&arr[i], &arr[j]); }
 
 ===SAMPLE OUTPUT===
 
-===== Blood Donor Finder (Minimal Version) =====
+===== Blood Donor Finder =====
  1. Register Donor
  2. Edit Donor
  3. Undo Last Edit
  4. Display Donors by Blood Group
  5. Add Hospital
  6. Add Route Between Hospitals
- 7. New Emergency Request (FIFO + Priority)
- 8. Process Next Request (FIFO)
- 9. Process Most Urgent Request (Heap)
-10. Search Donor by ID (Hash)
-11. Show Eligible Donors (Quick Sort)
-12. Alphabetical Report (Quick Sort)
-13. Find Nearest Hospital (Dijkstra)
+ 7. New Emergency Request 
+ 8. Process Next Request 
+ 9. Process Most Urgent Request
+10. Search Donor by ID 
+11. Show Eligible Donors 
+12. Alphabetical Report 
+13. Find Nearest Hospital 
  0. Exit
 
 Choice: 1
