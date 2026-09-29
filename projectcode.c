@@ -370,20 +370,20 @@ int main() {
     char name[NAME_LEN], bg[BG_LEN], date[DATE_LEN], patient[NAME_LEN];
 
     // Menu is printed ONLY ONCE
-    printf("\n===== Blood Donor Finder (Minimal Version) =====\n");
+    printf("\n===== Blood Donor Finder =====\n");
     printf(" 1. Register Donor\n");
     printf(" 2. Edit Donor\n");
     printf(" 3. Undo Last Edit\n");
     printf(" 4. Display Donors by Blood Group\n");
     printf(" 5. Add Hospital\n");
     printf(" 6. Add Route Between Hospitals\n");
-    printf(" 7. New Emergency Request (FIFO + Priority)\n");
-    printf(" 8. Process Next Request (FIFO)\n");
-    printf(" 9. Process Most Urgent Request (Heap)\n");
-    printf("10. Search Donor by ID (Hash)\n");
-    printf("11. Show Eligible Donors (Quick Sort)\n");
-    printf("12. Alphabetical Report (Quick Sort)\n");
-    printf("13. Find Nearest Hospital (Dijkstra)\n");
+    printf(" 7. New Emergency Request \n");
+    printf(" 8. Process Next Request \n");
+    printf(" 9. Process Most Urgent Request \n");
+    printf("10. Search Donor by ID \n");
+    printf("11. Show Eligible Donors \n");
+    printf("12. Alphabetical Report \n");
+    printf("13. Find Nearest Hospital \n");
     printf(" 0. Exit\n");
 
     do {
